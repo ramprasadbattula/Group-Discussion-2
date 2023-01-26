@@ -7,16 +7,16 @@ import java.util.Random;
 
 public class ToyFactory {
     private static final int NUM_SPACES = 36;
-    private static final int MIN_TRAPS_BONUSES = 9;
+    private static final int MIN_damaged_BONUSES = 9;
 
     private Digraph board;
     private int numPlayers;
     private int[] playerPositions;
-    private int[] playerFuel;
-    private boolean[] traps;
+    private int[] factoryParts;
+    private boolean[] damaged;
     private boolean[] bonuses;
     private boolean[] roadBlocks;
-    private String[] weatherConditions;
+    private String[] Conditions;
     private Random rand;
 
     public ToyFactory() {
@@ -31,28 +31,28 @@ public class ToyFactory {
         // get number of players
         numPlayers = getNumPlayers();
 
-        // get number of traps and bonuses
-        int numTrapsBonuses = getNumTrapsBonuses();
+        // get number of damaged and bonuses
+        int numdamagedBonuses = getNumdamagedBonuses();
 
-        // initialize player positions, fuel, and traps/bonuses arrays
+        // initialize player positions, fuel, and damaged/bonuses arrays
         playerPositions = new int[numPlayers];
-        playerFuel = new int[numPlayers];
-        traps = new boolean[NUM_SPACES];
+        factoryParts = new int[numPlayers];
+        damaged = new boolean[NUM_SPACES];
         bonuses = new boolean[NUM_SPACES];
         roadBlocks = new boolean[NUM_SPACES];
-        weatherConditions = new String[NUM_SPACES];
+        Conditions = new String[NUM_SPACES];
 
         for (int i = 0; i < numPlayers; i++) {
             playerPositions[i] = 0;
-            playerFuel[i] = 5;
+            factoryParts[i] = 5;
         }
 
-        for (int i = 0; i < numTrapsBonuses; i++) {
+        for (int i = 0; i < numdamagedBonuses; i++) {
             int trapBonusSpace = rand.nextInt(NUM_SPACES);
-            if (!traps[trapBonusSpace] && !bonuses[trapBonusSpace]) {
+            if (!damaged[trapBonusSpace] && !bonuses[trapBonusSpace]) {
                 int trapBonus = rand.nextInt(2);
                 if (trapBonus == 0) {
-                    traps[trapBonusSpace] = true;
+                    damaged[trapBonusSpace] = true;
                 } else {
                     bonuses[trapBonusSpace] = true;
                 }
@@ -66,48 +66,49 @@ public class ToyFactory {
         }
         // add weather conditions
         for (int i = 0; i < NUM_SPACES; i++) {
-            weatherConditions[i] = rand.nextBoolean() ? "Sunny" : "Rainy";
+            Conditions[i] = rand.nextBoolean() ? "day" : "night";
         }
     }
 
+    boolean cond = true;
+
     public void play() {
-        boolean condition = true;
-        while (condition) {
+        while (cond) {
             int numTurns = 100;
             for (int turn = 0; turn < numTurns; turn++) {
                 for (int i = 0; i < numPlayers; i++) {
-                    StdOut.println("Player " + (i + 1) + " is at space " + playerPositions[i]);
+                    StdOut.println("Employee " + (i + 1) + " is at space " + playerPositions[i]);
                     int roll = rand.nextInt(6) + 1;
-                    StdOut.println("Player " + (i + 1) + " rolled a " + roll);
+                    StdOut.println("Employee " + (i + 1) + " rolled a " + roll);
                     playerPositions[i] += roll;
                     if (playerPositions[i] >= NUM_SPACES) {
                         playerPositions[i] = NUM_SPACES - 1;
                     }
-                    if (playerFuel[i] > 0) {
-                        playerFuel[i]--;
+                    if (factoryParts[i] > 0) {
+                        factoryParts[i]--;
                     }
-                    StdOut.println("Player " + (i + 1) + " is at space " + playerPositions[i]);
-                    if (traps[playerPositions[i]]) {
-                        StdOut.println("Player " + (i + 1) + " encountered a trap at space " + playerPositions[i]);
+                    StdOut.println("Employee " + (i + 1) + " is at space " + playerPositions[i]);
+                    if (damaged[playerPositions[i]]) {
+                        StdOut.println("Employee " + (i + 1) + " encountered a damaged at space " + playerPositions[i]);
                     } else if (bonuses[playerPositions[i]]) {
-                        StdOut.println("Player " + (i + 1) + " encountered a bonus at space " + playerPositions[i]);
+                        StdOut.println("Employee " + (i + 1) + " encountered a bonus at space " + playerPositions[i]);
                     }
                     if (roadBlocks[playerPositions[i]]) {
-                        StdOut.println("Player " + (i + 1) + " encountered a road block at space " + playerPositions[i]);
+                        StdOut.println("Employee " + (i + 1) + " encountered a stop at space " + playerPositions[i]);
                     }
-                    if (weatherConditions[playerPositions[i]].equals("Rainy")) {
-                        StdOut.println("Player " + (i + 1) + " encountered Rainy weather at space " + playerPositions[i]);
+                    if (Conditions[playerPositions[i]].equals("day")) {
+                        StdOut.println("Employee " + (i + 1) + " building at day " + playerPositions[i]);
                     }
-                    if (weatherConditions[playerPositions[i]].equals("Sunny")) {
-                        StdOut.println("Player " + (i + 1) + " encountered Sunny weather at space " + playerPositions[i]);
+                    if (Conditions[playerPositions[i]].equals("night")) {
+                        StdOut.println("Employee " + (i + 1) + " building at night " + playerPositions[i]);
                     }
-                    if (playerFuel[i] == 0) {
-                        StdOut.println("Player " + (i + 1) + " ran out of fuel!");
-                        condition = false;
-                    } else if (playerPositions[i] == NUM_SPACES - 1) {
-                        StdOut.println("Player " + (i + 1) + " reached the destination!");
-                        condition = false;
-
+                    if (factoryParts[i] == 0) {
+                        StdOut.println("Employee " + (i + 1) + " ran out of parts!");
+                        cond = false;
+                    }
+                    if (playerPositions[i] == NUM_SPACES - 1) {
+                        StdOut.println("Employee " + (i + 1) + " reached building the factory!");
+                        cond = false;
                     }
                 }
             }
@@ -115,23 +116,24 @@ public class ToyFactory {
     }
 
     private int getNumPlayers() {
-        StdOut.print("Enter number of players (1-4): ");
+        StdOut.print("Enter number of Employees (1-4): ");
         int players = StdIn.readInt();
         while (players < 1 || players > 4) {
-            StdOut.print("Invalid input. Enter number of players (1-4): ");
+            StdOut.print("Invalid input. Enter number of Employeesclear" +
+                    "s (1-4): ");
             players = StdIn.readInt();
         }
         return players;
     }
 
-    private int getNumTrapsBonuses() {
-        StdOut.print("Enter number of Turns and Conditions: ");
-        int trapsBonuses = StdIn.readInt();
-        while (trapsBonuses < MIN_TRAPS_BONUSES) {
-            StdOut.print("Invalid input. Enter number of traps and bonuses (minimum 9): ");
-            trapsBonuses = StdIn.readInt();
+    private int getNumdamagedBonuses() {
+        StdOut.print("Enter number of damaged and bonuses (minimum 9): ");
+        int damagedBonuses = StdIn.readInt();
+        while (damagedBonuses < MIN_damaged_BONUSES) {
+            StdOut.print("Invalid input. Enter number of damaged and bonuses (minimum 9): ");
+            damagedBonuses = StdIn.readInt();
         }
-        return trapsBonuses;
+        return damagedBonuses;
     }
 
     public static void main(String[] args) {
